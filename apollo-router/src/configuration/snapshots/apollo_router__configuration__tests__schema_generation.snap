@@ -292,6 +292,25 @@ expression: "&schema"
                                 "service_name": {
                                   "description": "The service you're trying to access, eg: \"s3\", \"vpc-lattice-svcs\", etc.",
                                   "type": "string"
+                                },
+                                "signature_location": {
+                                  "description": "Where the SigV4 signature should be added",
+                                  "oneOf": [
+                                    {
+                                      "description": "Add the signature to headers (default)",
+                                      "type": "string",
+                                      "enum": [
+                                        "HEADERS"
+                                      ]
+                                    },
+                                    {
+                                      "description": "Add the signature to the query parameters",
+                                      "type": "string",
+                                      "enum": [
+                                        "QUERY_PARAMS"
+                                      ]
+                                    }
+                                  ]
                                 }
                               },
                               "additionalProperties": false
@@ -350,6 +369,25 @@ expression: "&schema"
                                 "service_name": {
                                   "description": "The service you're trying to access, eg: \"s3\", \"vpc-lattice-svcs\", etc.",
                                   "type": "string"
+                                },
+                                "signature_location": {
+                                  "description": "Where the SigV4 signature should be added",
+                                  "oneOf": [
+                                    {
+                                      "description": "Add the signature to headers (default)",
+                                      "type": "string",
+                                      "enum": [
+                                        "HEADERS"
+                                      ]
+                                    },
+                                    {
+                                      "description": "Add the signature to the query parameters",
+                                      "type": "string",
+                                      "enum": [
+                                        "QUERY_PARAMS"
+                                      ]
+                                    }
+                                  ]
                                 }
                               },
                               "additionalProperties": false
@@ -435,6 +473,25 @@ expression: "&schema"
                                   "service_name": {
                                     "description": "The service you're trying to access, eg: \"s3\", \"vpc-lattice-svcs\", etc.",
                                     "type": "string"
+                                  },
+                                  "signature_location": {
+                                    "description": "Where the SigV4 signature should be added",
+                                    "oneOf": [
+                                      {
+                                        "description": "Add the signature to headers (default)",
+                                        "type": "string",
+                                        "enum": [
+                                          "HEADERS"
+                                        ]
+                                      },
+                                      {
+                                        "description": "Add the signature to the query parameters",
+                                        "type": "string",
+                                        "enum": [
+                                          "QUERY_PARAMS"
+                                        ]
+                                      }
+                                    ]
                                   }
                                 },
                                 "additionalProperties": false
@@ -493,6 +550,25 @@ expression: "&schema"
                                   "service_name": {
                                     "description": "The service you're trying to access, eg: \"s3\", \"vpc-lattice-svcs\", etc.",
                                     "type": "string"
+                                  },
+                                  "signature_location": {
+                                    "description": "Where the SigV4 signature should be added",
+                                    "oneOf": [
+                                      {
+                                        "description": "Add the signature to headers (default)",
+                                        "type": "string",
+                                        "enum": [
+                                          "HEADERS"
+                                        ]
+                                      },
+                                      {
+                                        "description": "Add the signature to the query parameters",
+                                        "type": "string",
+                                        "enum": [
+                                          "QUERY_PARAMS"
+                                        ]
+                                      }
+                                    ]
                                   }
                                 },
                                 "additionalProperties": false

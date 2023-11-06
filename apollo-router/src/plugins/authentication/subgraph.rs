@@ -37,6 +37,9 @@ pub(crate) struct AWSSigV4HardcodedConfig {
     service_name: String,
     /// Specify assumed role configuration.
     assume_role: Option<AssumeRoleProvider>,
+    /// Where the SigV4 signature should be added
+    #[serde(default)]
+    signature_location: SignatureLocation,
 }
 
 impl ProvideCredentials for AWSSigV4HardcodedConfig {
@@ -68,6 +71,29 @@ pub(crate) struct DefaultChainConfig {
     service_name: String,
     /// Specify assumed role configuration.
     assume_role: Option<AssumeRoleProvider>,
+    /// Where the SigV4 signature should be added
+    #[serde(default)]
+    signature_location: SignatureLocation,
+}
+
+/// Where the SigV4 signature should be added
+#[derive(Clone, Copy, JsonSchema, Deserialize, Debug, Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub(crate) enum SignatureLocation {
+    /// Add the signature to headers (default)
+    #[default]
+    Headers,
+    /// Add the signature to the query parameters
+    QueryParams,
+}
+
+impl From<SignatureLocation> for aws_sigv4::http_request::SignatureLocation {
+    fn from(value: SignatureLocation) -> Self {
+        match value {
+            SignatureLocation::Headers => Self::Headers,
+            SignatureLocation::QueryParams => Self::QueryParams,
+        }
+    }
 }
 
 /// Specify assumed role configuration.
@@ -161,6 +187,13 @@ impl AWSSigV4Config {
             Self::Hardcoded(config) => config.assume_role.clone(),
         }
     }
+
+    fn signature_location(&self) -> SignatureLocation {
+        match self {
+            Self::DefaultChain(config) => config.signature_location,
+            Self::Hardcoded(config) => config.signature_location,
+        }
+    }
 }
 
 #[derive(Clone, Debug, JsonSchema, Deserialize)]
@@ -195,6 +228,7 @@ pub(crate) struct SigningParamsConfig {
     region: Region,
     service_name: String,
     subgraph_name: String,
+    signature_location: SignatureLocation,
 }
 
 impl SigningParamsConfig {
@@ -344,6 +378,7 @@ pub(super) async fn make_signing_params(
                 service_name: config.service_name(),
                 credentials_provider,
                 subgraph_name: subgraph_name.to_string(),
+                signature_location: config.signature_location(),
             })
         }
     }
@@ -357,6 +392,7 @@ fn get_signing_settings(signing_params: &SigningParamsConfig) -> SigningSettings
         "appsync" | "s3" | "vpc-lattice-svcs" => PayloadChecksumKind::XAmzSha256,
         _ => PayloadChecksumKind::NoHeader,
     };
+    settings.signature_location = signing_params.signature_location.into();
     settings
 }
 
@@ -421,6 +457,7 @@ mod test {
                 region: "us-east-1".to_string(),
                 service_name: service_name.to_string(),
                 assume_role: None,
+                signature_location: SignatureLocation::Headers,
             })),
             "all",
         )
@@ -536,6 +573,7 @@ mod test {
                         region: "us-east-1".to_string(),
                         service_name: "vpc-lattice-svcs".to_string(),
                         assume_role: None,
+                        signature_location: SignatureLocation::Headers,
                     })),
                     "all",
                 )
@@ -588,6 +626,7 @@ mod test {
                         region: "us-east-1".to_string(),
                         service_name: "s3".to_string(),
                         assume_role: None,
+                        signature_location: SignatureLocation::Headers,
                     })),
                     "all",
                 )
