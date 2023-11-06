@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
 use std::time::SystemTime;
 
 use aws_credential_types::provider::ProvideCredentials;
@@ -85,15 +86,6 @@ pub(crate) enum SignatureLocation {
     Headers,
     /// Add the signature to the query parameters
     QueryParams,
-}
-
-impl From<SignatureLocation> for aws_sigv4::http_request::SignatureLocation {
-    fn from(value: SignatureLocation) -> Self {
-        match value {
-            SignatureLocation::Headers => Self::Headers,
-            SignatureLocation::QueryParams => Self::QueryParams,
-        }
-    }
 }
 
 /// Specify assumed role configuration.
@@ -392,7 +384,13 @@ fn get_signing_settings(signing_params: &SigningParamsConfig) -> SigningSettings
         "appsync" | "s3" | "vpc-lattice-svcs" => PayloadChecksumKind::XAmzSha256,
         _ => PayloadChecksumKind::NoHeader,
     };
-    settings.signature_location = signing_params.signature_location.into();
+    settings.signature_location = match signing_params.signature_location {
+        SignatureLocation::Headers => aws_sigv4::http_request::SignatureLocation::Headers,
+        SignatureLocation::QueryParams => {
+            settings.expires_in = Some(Duration::from_secs(30));
+            aws_sigv4::http_request::SignatureLocation::QueryParams
+        }
+    };
     settings
 }
 
