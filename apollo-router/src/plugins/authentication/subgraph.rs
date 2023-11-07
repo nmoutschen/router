@@ -12,6 +12,7 @@ use aws_sigv4::http_request::SignableRequest;
 use aws_sigv4::http_request::SigningSettings;
 use aws_sigv4::signing_params;
 use aws_types::region::Region;
+use http::header::AUTHORIZATION;
 use http::Request;
 use hyper::Body;
 use schemars::JsonSchema;
@@ -232,7 +233,18 @@ impl SigningParamsConfig {
             })?
             .into_parts();
         req = Request::<Body>::from_parts(parts, body_bytes.into());
+        // Copy `authorization` headers if any
+        let auth_headers = req
+            .headers()
+            .get_all(AUTHORIZATION)
+            .iter()
+            .cloned()
+            .collect::<Vec<_>>();
         signing_instructions.apply_to_request(&mut req);
+        // Re-inject the `authorization` headers, as `apply_to_request` strips them.
+        for auth_header in auth_headers {
+            req.headers_mut().append(AUTHORIZATION, auth_header);
+        }
         increment_success_counter(subgraph_name);
         Ok(req)
     }
